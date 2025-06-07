@@ -12,12 +12,7 @@ const urlStorage = {
   _checkForChanges() {
     for (let path in this._eventListeners) {
       let parents = this._parentListeners(path)
-      if (this._textCache[path] != this.storage.getItem(path)) {
-        this._textCache[path] = this.storage.getItem(path)
-        for (let listener of this._eventListeners[path]) {
-          listener(path, this._textCache[path])
-        }
-      } else if (this._pathSplit.includes(path.slice(-1))) {
+      if (this._pathSplit.includes(path.slice(-1))) {
         let files = this.ls(path)
         for (let listener of this._eventListeners[path]) {
           if (files.length) {
@@ -26,12 +21,16 @@ const urlStorage = {
             this.removeListenerFromPath(path, listener)
           }
         }
+      } else if (this._textCache[path] != this.storage.getItem(path)) {
+        this._textCache[path] = this.storage.getItem(path)
+        for (let listener of this._eventListeners[path]) {
+          listener(path, this._textCache[path])
+        }
       } else if (this.storage.getItem(path) == null) {
         for (let listener of this._eventListeners[path]) {
           if (parents.includes(listener)) this.removeListenerFromPath(path, listener)
         }
       }
-      if (!this._eventListeners[path].length) delete this._eventListeners[path]
     }
   },
   _parentListeners(childPath) {
@@ -56,6 +55,16 @@ const urlStorage = {
     if (!this._pathSplit.includes(path.slice(0, 1))) pwd = pwd.slice(0, pwd.lastIndexOf("/") + 1)
     this._a.href = pwd + path
     return this._a.href
+  },
+  dirname(path) {
+    if (this._pathSplit.includes(path.slice(-1))) path = path.slice(0, -1)
+    return path.slice(0, -path.split(/[\/\?\&\#]/).pop().length)
+  },
+  basename(path) {
+    let parts = path.split(/[\/\?\&\#]/)
+    let name
+    while (!name) name = parts.pop()
+    return path.slice(parts.lastIndexOf(name))
   },
   cd(path) {
     if (!path) { this.pwd = ""; path = "." }
@@ -88,13 +97,11 @@ const urlStorage = {
 
   delete(path) {
     path = this.absUrl(path)
-    if (this._pathSplit.includes(path.slice(-1))) path = path.slice(0, -1)
     let items = [path]
-    for (sep of this._pathSplit) {
-      let dir = path + sep
+    if (this._pathSplit.includes(path.slice(-1))) {
       for (let i = 0; i < this.storage.length; i++) {
         let key = this.storage.key(i)
-        if (key.slice(0, dir.length) != dir) continue
+        if (key.slice(0, path.length) != path) continue
         if (!items.includes(key)) items.push(key)
       }
     }
@@ -104,26 +111,28 @@ const urlStorage = {
   copy(path, dest) {
     path = this.absUrl(path)
     dest = this.absUrl(dest)
-    if (this._pathSplit.includes(path.slice(-1))) path = path.slice(0, -1)
-    if (this._pathSplit.includes(dest.slice(-1))) dest = dest.slice(0, -1)
-    let items = [path]
-    for (sep of this._pathSplit) {
-      let dir = path + sep
+    let items = []
+    if (this._pathSplit.includes(path.slice(-1))) {
+      if (!this._pathSplit.includes(dest.slice(-1))) dest += "/"
+      dest += this.basename(path)
       for (let i = 0; i < this.storage.length; i++) {
         let key = this.storage.key(i)
-        if (key.slice(0, dir.length) != dir) continue
+        if (key.slice(0, path.length) != path) continue
         if (!items.includes(key)) items.push(key)
       }
+    } else {
+      if (this._pathSplit.includes(dest.slice(-1))) dest += this.basename(path)
+      items.push(path)
     }
     items.sort()
-    for (let item of items) this.writeText(item.replace(path, dest), this.storage.getItem(item))
+    for (let item of items) this.storage.setItem(item.replace(path, dest), this.storage.getItem(item))
   },
 
   readText(path) {
     path = this.absUrl(path)
     try {
       if (!this.storage.getItem(path)) fetch(path).then(resp => resp.ok ? resp.text() : null).then(data => {
-        if (!this.storage.getItem(path)) this.writeText(path, data)
+        if (!this.storage.getItem(path)) this.storage.setItem(path, data)
       })
     } catch (error) { }
     return this.storage.getItem(path)
@@ -139,18 +148,18 @@ const urlStorage = {
   },
   removeListenerFromPath(path, listener) {
     path = this.absUrl(path)
-    if (this._pathSplit.includes(path.slice(-1))) path = path.slice(0, -1)
     let items = [path]
-    for (sep of this._pathSplit) {
-      let dir = path + sep
+    if (this._pathSplit.includes(path.slice(-1))) {
       for (let key in this._eventListeners) {
-        if (key.slice(0, dir.length) != dir) continue
+        if (key.slice(0, path.length) != path) continue
         if (!items.includes(key)) items.push(key)
       }
     }
     items.sort()
     for (let item of items) {
+      if (!this._eventListeners[item]) continue
       if (this._eventListeners[item].includes(listener)) this._eventListeners[item].splice(this._eventListeners[item].indexOf(listener), 1)
+      if (!this._eventListeners[item].length) delete this._eventListeners[item]
     }
   },
 
