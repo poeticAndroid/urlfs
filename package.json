@@ -1,14 +1,14 @@
 {
-  "name": "urlstorage",
+  "name": "urlfs",
   "version": "1.0.0",
   "description": "Use the webserver as a faux filesystem using localStorage",
-  "main": "urlStorage.js",
+  "main": "urlfs.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/poeticAndroid/urlStorage.git"
+    "url": "git+https://github.com/poeticAndroid/urlfs.git"
   },
   "keywords": [
     "localStorage",
@@ -20,7 +20,7 @@
   "author": "poeticAndroid",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/poeticAndroid/urlStorage/issues"
+    "url": "https://github.com/poeticAndroid/urlfs/issues"
   },
-  "homepage": "https://github.com/poeticAndroid/urlStorage#readme"
+  "homepage": "https://github.com/poeticAndroid/urlfs#readme"
 }

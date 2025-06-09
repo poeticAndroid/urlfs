@@ -1,4 +1,4 @@
-const urlStorage = {
+const urlfs = {
   _a: document.createElement("a"),
   _pathSplit: ["/", "?", "&", "#"],
   _eventListeners: {},
@@ -188,4 +188,4 @@ const urlStorage = {
     return this._jsonCache[path]
   },
 }
-urlStorage.popd()
+urlfs.popd()
