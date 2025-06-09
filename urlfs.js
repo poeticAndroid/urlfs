@@ -144,7 +144,7 @@ const urlfs = {
     path = this.absUrl(path)
     this._eventListeners[path] = this._eventListeners[path] || []
     if (!this._eventListeners[path].includes(listener)) this._eventListeners[path].push(listener)
-    if (!this._listener) this._listener = setInterval(this._checkForChanges, 40)
+    if (!this._listener) this._listener = setInterval(this._checkForChanges, 128)
   },
   removeListenerFromPath(path, listener) {
     path = this.absUrl(path)
