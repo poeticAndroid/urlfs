@@ -126,7 +126,10 @@ const urlfs = {
       items.push(path)
     }
     items.sort()
-    for (let item of items) this.storage.setItem(item.replace(path, dest), this.storage.getItem(item))
+    for (let item of items) {
+      let d = item.replace(path, dest)
+      this.storage.setItem(d, this.storage.getItem(item))
+    }
   },
 
   readText(path) {
