@@ -37,10 +37,8 @@ const urlfs = {
     let listeners = []
     for (let path in this._eventListeners) {
       if (path == childPath) continue
-      if (childPath.slice(0, path.length) == path) {
-        for (let listener of this._eventListeners[path]) {
-          if (this._pathSplit.includes(path.slice(-1)) && !listeners.includes(listener)) listeners.push(listener)
-        }
+      if (this._pathSplit.includes(path.slice(-1)) && childPath.slice(0, path.length) == path) {
+        for (let listener of this._eventListeners[path]) if (!listeners.includes(listener)) listeners.push(listener)
       }
     }
     return listeners
@@ -106,7 +104,10 @@ const urlfs = {
       }
     }
     items.sort().reverse()
-    for (let item of items) this.storage.removeItem(item)
+    for (let item of items) {
+      this._jsonCache[item] = null
+      this.storage.removeItem(item)
+    }
   },
   copy(path, dest) {
     path = this.absUrl(path)
@@ -131,20 +132,24 @@ const urlfs = {
   readText(path) {
     path = this.absUrl(path)
     try {
-      if (!this.storage.getItem(path)) fetch(path).then(resp => resp.ok ? resp.text() : null).then(data => {
-        if (!this.storage.getItem(path)) this.storage.setItem(path, data)
+      if (!(this._textCache[path] || this.storage.getItem(path))) fetch(path).then(resp => resp.ok ? resp.text() : null).then(data => {
+        if (!this.storage.getItem(path)) {
+          if (data) this.storage.setItem(path, data)
+          this._textCache[path] = !data
+        }
       })
     } catch (error) { }
     return this.storage.getItem(path)
   },
   writeText(path, data) {
+    this._jsonCache[this.absUrl(path)] = null
     this.storage.setItem(this.absUrl(path), data)
   },
   addListenerToPath(path, listener) {
     path = this.absUrl(path)
     this._eventListeners[path] = this._eventListeners[path] || []
     if (!this._eventListeners[path].includes(listener)) this._eventListeners[path].push(listener)
-    if (!this._listener) this._listener = setInterval(this._checkForChanges, 128)
+    if (!this._listener) this._listener = setInterval(this._checkForChanges.bind(this), 128)
   },
   removeListenerFromPath(path, listener) {
     path = this.absUrl(path)
@@ -159,7 +164,7 @@ const urlfs = {
     for (let item of items) {
       if (!this._eventListeners[item]) continue
       if (this._eventListeners[item].includes(listener)) this._eventListeners[item].splice(this._eventListeners[item].indexOf(listener), 1)
-      if (!this._eventListeners[item].length) delete this._eventListeners[item]
+      if (!this._eventListeners[item].length) this._eventListeners[item] = null
     }
   },
 
@@ -181,9 +186,11 @@ const urlfs = {
     path = this.absUrl(path)
     if (this._jsonCache[path]) return this._jsonCache[path]
     this._jsonCache[path] = this.readJson(path)
+    let text = JSON.stringify(this._jsonCache[path])
     setTimeout(() => {
-      this.writeJson(path, this._jsonCache[path])
-      delete this._jsonCache[path]
+      if (!this._jsonCache[path]) return
+      if (text != JSON.stringify(this._jsonCache[path])) this.writeJson(path, this._jsonCache[path])
+      this._jsonCache[path] = null
     }, timeout)
     return this._jsonCache[path]
   },
