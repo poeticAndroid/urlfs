@@ -22,6 +22,8 @@ const urlfs = {
   delete(path) // delete file or entire directory
   copy(path, dest) // copy `path` to `dest`
 
+  async preload(...paths) // ensure all `paths` have content or fetch from webserver
+
   readText(path) // return file contents as string
   writeText(path, data) // write text to file
   addListenerToPath(path, listener) // register `listener` as a function to be called on every change to `path` or its descendants

@@ -3,6 +3,7 @@ const urlfs = {
   _pathSplit: ["/", "?", "&", "#"],
   _eventListeners: {},
   _listener: null,
+  _failedFetch: {},
   _textCache: {},
   _jsonCache: {},
   storage: localStorage,
@@ -132,14 +133,34 @@ const urlfs = {
     }
   },
 
+  async preload(...paths) {
+    let n = 0
+    for (let path of paths) if (this.readText(path)) n++
+    if (n == paths.length) return true
+    return new Promise((resolve, reject) => {
+      let to = setInterval(e => {
+        n = 0
+        for (let path of paths) {
+          if (this.readText(path)) n++
+          else if (this._failedFetch[path]) {
+            clearInterval(to)
+            reject("fetch error")
+          }
+        }
+        if (n == paths.length) {
+          clearInterval(to)
+          resolve(true)
+        }
+      }, 256)
+    })
+  },
+
   readText(path) {
     path = this.absUrl(path)
     try {
-      if (!(this._textCache[path] || this.storage.getItem(path))) fetch(path).then(resp => resp.ok ? resp.text() : null).then(data => {
-        if (!this.storage.getItem(path)) {
-          if (data) this.storage.setItem(path, data)
-          this._textCache[path] = !data
-        }
+      if (!(this._failedFetch[path] || this.storage.getItem(path))) fetch(path).then(resp => resp.ok ? resp.text() : null).then(data => {
+        this._failedFetch[path] = !data
+        if (data && !this.storage.getItem(path)) this.storage.setItem(path, data)
       })
     } catch (error) { }
     return this.storage.getItem(path)
