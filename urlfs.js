@@ -115,15 +115,15 @@ const urlfs = {
     dest = this.absUrl(dest)
     let items = []
     if (this._pathSplit.includes(path.slice(-1))) {
-      if (!this._pathSplit.includes(dest.slice(-1))) dest += "/"
-      dest += this.basename(path)
+      if (!this._pathSplit.includes(dest.slice(-1))) dest += path.slice(-1)
+      // dest += this.basename(path)
       for (let i = 0; i < this.storage.length; i++) {
         let key = this.storage.key(i)
         if (key.slice(0, path.length) != path) continue
         if (!items.includes(key)) items.push(key)
       }
     } else {
-      if (this._pathSplit.includes(dest.slice(-1))) dest += this.basename(path)
+      while (this._pathSplit.includes(dest.slice(-1))) dest = dest.slice(0, -1)
       items.push(path)
     }
     items.sort()
@@ -238,6 +238,16 @@ const urlfs = {
       throw new Error("urlfs.copy method obsolete! Use cp instead!")
     } else {
       console.warn("urlfs.copy method obsolete! Use cp instead!")
+      if (this._pathSplit.includes(path.slice(-1))) {
+        if (!this._pathSplit.includes(dest.slice(-1))) dest += "/"
+        console.warn(`...and dest must be '${dest + this.basename(path)}' instead of '${dest}'`)
+        dest += this.basename(path)
+      } else {
+        if (this._pathSplit.includes(dest.slice(-1))) {
+          console.warn(`...and dest must be '${dest + this.basename(path)}' instead of '${dest}'`)
+          dest += this.basename(path)
+        }
+      }
       return this.cp(path, dest)
     }
   },
