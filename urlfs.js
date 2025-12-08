@@ -162,7 +162,8 @@ const urlfs = {
       paths.push(file + "?new")
     }
     await this.preload(...paths)
-    for (let file of paths) {
+    for (let i = 0; i < len; i++) {
+      let file = paths[i]
       let user = this.readJson(file)
       let oldDef = this.readJson(file + "?default") || {}
       let newDef = this.readJson(file + "?new")
