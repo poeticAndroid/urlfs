@@ -154,6 +154,29 @@ const urlfs = {
       }, 256)
     })
   },
+  async updateDefaults(...paths) {
+    let len = paths.length
+    for (let i = 0; i < len; i++) {
+      let file = paths[i]
+      this.rm(file + "?new")
+      paths.push(file + "?new")
+    }
+    await this.preload(...paths)
+    for (let file of paths) {
+      let user = this.readJson(file)
+      let oldDef = this.readJson(file + "?default") || {}
+      let newDef = this.readJson(file + "?new")
+      for (let key in user) {
+        if (JSON.stringify(user[key]) === JSON.stringify(oldDef[key])) user[key] = newDef[key]
+      }
+      for (let key in newDef) {
+        if (JSON.stringify(user[key]) === JSON.stringify(oldDef[key])) user[key] = newDef[key]
+      }
+      this.writeJson(file, user)
+      this.writeText(file + "?default", this.readText(file + "?new"))
+      this.rm(file + "?new")
+    }
+  },
 
   readText(path) {
     path = this.absUrl(path)

@@ -23,6 +23,7 @@ const urlfs = {
   cp(path, dest) // copy `path` to `dest`
 
   async preload(...paths) // ensure all `paths` have content or fetch from webserver
+  async updateDefaults(...paths) // like `preload`, but also update default values from webserver
 
   readText(path) // return file contents as string
   writeText(path, data) // write text to file
