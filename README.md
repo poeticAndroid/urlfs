@@ -19,7 +19,7 @@ const urlfs = {
 
   ls(path) // return array of entries in `path`
 
-  delete(path) // delete file or entire directory
+  rm(path) // delete file or entire directory
   copy(path, dest) // copy `path` to `dest`
 
   async preload(...paths) // ensure all `paths` have content or fetch from webserver

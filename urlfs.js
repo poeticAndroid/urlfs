@@ -1,6 +1,6 @@
 const urlfs = {
   _a: document.createElement("a"),
-  _pathSplit: ["/", "?", "&", "#"],
+  _pathSplit: ["/", "?", "&", "=", "#"],
   _eventListeners: {},
   _listener: null,
   _failedFetch: {},
@@ -95,6 +95,15 @@ const urlfs = {
   },
 
   delete(path) {
+    let now = new Date()
+    if (now.getFullYear() > 2026) {
+      throw new Error("urlfs.delete method obsolete! Use rm instead!")
+    } else {
+      console.warn("urlfs.delete method obsolete! Use rm instead!")
+      return this.rm(path)
+    }
+  },
+  rm(path) {
     path = this.absUrl(path)
     let items = [path]
     if (this._pathSplit.includes(path.slice(-1))) {
