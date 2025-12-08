@@ -94,15 +94,6 @@ const urlfs = {
     return files.sort()
   },
 
-  delete(path) {
-    let now = new Date()
-    if (now.getFullYear() > 2026) {
-      throw new Error("urlfs.delete method obsolete! Use rm instead!")
-    } else {
-      console.warn("urlfs.delete method obsolete! Use rm instead!")
-      return this.rm(path)
-    }
-  },
   rm(path) {
     path = this.absUrl(path)
     let items = [path]
@@ -119,7 +110,7 @@ const urlfs = {
       this.storage.removeItem(item)
     }
   },
-  copy(path, dest) {
+  cp(path, dest) {
     path = this.absUrl(path)
     dest = this.absUrl(dest)
     let items = []
@@ -226,6 +217,29 @@ const urlfs = {
       this._jsonCache[path] = null
     }, timeout)
     return this._jsonCache[path]
+  },
+
+
+
+
+
+  delete(path) {
+    let now = new Date()
+    if (now.getFullYear() > 2026) {
+      throw new Error("urlfs.delete method obsolete! Use rm instead!")
+    } else {
+      console.warn("urlfs.delete method obsolete! Use rm instead!")
+      return this.rm(path)
+    }
+  },
+  copy(path, dest) {
+    let now = new Date()
+    if (now.getFullYear() > 2026) {
+      throw new Error("urlfs.copy method obsolete! Use cp instead!")
+    } else {
+      console.warn("urlfs.copy method obsolete! Use cp instead!")
+      return this.cp(path, dest)
+    }
   },
 }
 urlfs.popd()
