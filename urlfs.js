@@ -88,7 +88,7 @@ const urlfs = {
       if (key.slice(0, this.pwd.length) != this.pwd) continue
       key = key.slice(this.pwd.length)
       for (let sep of this._pathSplit) key = key.slice(0, (key + sep).indexOf(sep) + 1)
-      if (!files.includes(key)) files.push(key)
+      if (key && !files.includes(key)) files.push(key)
     }
     if (path) this.popd()
     return files.sort()
