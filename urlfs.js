@@ -212,7 +212,7 @@ const urlfs = {
     for (let item of items) {
       if (!this._eventListeners[item]) continue
       if (this._eventListeners[item].includes(listener)) this._eventListeners[item].splice(this._eventListeners[item].indexOf(listener), 1)
-      if (!this._eventListeners[item].length) this._eventListeners[item] = null
+      if (!this._eventListeners[item].length) delete this._eventListeners[item]
     }
   },
 
